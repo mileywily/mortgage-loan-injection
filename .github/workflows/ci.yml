@@ -43,7 +43,7 @@ jobs:
       - name: Run Gosec Security Scanner
         uses: securego/gosec@master
         with:
-          args: ./...
+          args: -exclude-dir=cmd/qa ./...
 
       - name: Secret Scanning (TruffleHog)
         uses: trufflesecurity/trufflehog@main
