@@ -47,7 +47,11 @@ func (c *finnFlowClient) getToken() (string, error) {
 		Username: c.username,
 		Password: c.password,
 	}
-	body, _ := json.Marshal(tr)
+	/* #nosec G117 */
+	body, err := json.Marshal(tr)
+	if err != nil {
+		return "", err
+	}
 
 	tokenUrl := c.url + "/api/token/"
 	slog.Debug("Requesting access token from: "+tokenUrl, "logger", "cl.bancofalabella.mortgage.injection.service.ThirdPartyApiService", "thread", "http-nio-8080-exec-1")
@@ -88,7 +92,10 @@ func (c *finnFlowClient) Inject(req domain.InyeccionRequest) (domain.InyeccionRe
 		return domain.InyeccionResponse{}, fmt.Errorf("Failed to obtain access token: %v", err)
 	}
 
-	body, _ := json.Marshal(req)
+	body, err := json.Marshal(req)
+	if err != nil {
+		return domain.InyeccionResponse{}, fmt.Errorf("Failed to marshal request: %v", err)
+	}
 	injectionUrl := c.url + "/api/inyeccion-salesforce/"
 	httpReq, err := http.NewRequest("POST", injectionUrl, bytes.NewBuffer(body))
 	if err != nil {
@@ -106,7 +113,10 @@ func (c *finnFlowClient) Inject(req domain.InyeccionRequest) (domain.InyeccionRe
 	}
 	defer resp.Body.Close()
 
-	respBody, _ := io.ReadAll(resp.Body)
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return domain.InyeccionResponse{}, fmt.Errorf("Failed to read response body: %v", err)
+	}
 
 	if resp.StatusCode == http.StatusOK {
 		var result domain.InyeccionResponse

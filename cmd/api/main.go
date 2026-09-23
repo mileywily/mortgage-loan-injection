@@ -56,11 +56,11 @@ func main() {
 	router := gin.Default()
 
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
-		v.RegisterValidation("customRutPattern", func(fl validator.FieldLevel) bool {
+		_ = v.RegisterValidation("customRutPattern", func(fl validator.FieldLevel) bool {
 			matched, _ := regexp.MatchString(`^[0-9]{1,2}\.[0-9]{3}\.[0-9]{3}-[0-9kK]$`, fl.Field().String())
 			return matched
 		})
-		v.RegisterValidation("customFechaPattern", func(fl validator.FieldLevel) bool {
+		_ = v.RegisterValidation("customFechaPattern", func(fl validator.FieldLevel) bool {
 			matched, _ := regexp.MatchString(`^[0-9]{2}-[0-9]{2}-[0-9]{4}$`, fl.Field().String())
 			return matched
 		})
