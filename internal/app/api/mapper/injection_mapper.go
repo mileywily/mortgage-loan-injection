@@ -25,6 +25,13 @@ func ToDomainDatosCredito(dtoDatos *dto.DatosCreditoDTO) domain.DatosCredito {
 		MesesGracia:        *dtoDatos.MesesGracia,
 		Tasa1:              *dtoDatos.Tasa1,
 		Spread1:            *dtoDatos.Spread1,
+		NumeroOperacionOriginal:    dtoDatos.NumeroOperacionOriginal,
+		MontoAbono:                 dtoDatos.MontoAbono,
+		IncluirGastosOperacionales: dtoDatos.IncluirGastosOperacionales,
+		TipoGarantia:               dtoDatos.TipoGarantia,
+		NumeroRenegociacion:        dtoDatos.NumeroRenegociacion,
+		SubsidioOriginal:           dtoDatos.SubsidioOriginal,
+		ReduccionInteresesYGC:      dtoDatos.ReduccionInteresesYGC,
 	}
 }
 

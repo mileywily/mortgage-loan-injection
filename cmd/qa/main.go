@@ -50,6 +50,13 @@ func main() {
 				"participantes": [{"Rut": "12.345.678-9","TipoParticipacion": 1,"Nombre": "A","Paterno": "B","Materno": "C","FechaNacimiento": "01-01-1990"}]
 			}`,
 		},
+		{
+			name: "5. Renegociacion (SRV01) con formato original invalido",
+			payload: `{
+				"datos_credito": {"NumeroSolicitud": 12345,"AntiguedadVivienda": 5,"EjecutivoComercial": "Juan","Producto": 1,"Objetivo": 2,"Destino": 3,"MontoAprobado": 100.5,"ValorPropiedad": 200.5,"FechaAprobacion": "2023-01-01","ValorContado": 100.0,"Plazo1": 20,"MesesGracia": 2,"Tasa1": 3.5,"Spread1": 1.0, "NumeroOperacionOriginal": "12345678901234567"},
+				"participantes": [{"Rut": "12.345.678-9","TipoParticipacion": 1,"Nombre": "A","Paterno": "B","Materno": "C","FechaNacimiento": "01-01-1990"}]
+			}`,
+		},
 	}
 
 	success := true

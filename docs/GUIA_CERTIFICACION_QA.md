@@ -26,6 +26,7 @@ QA debe validar los siguientes escenarios obligatorios:
 | **QA-03** | Formato de RUT/Email Inválido | `"Rut": "rut-sin-formato"` o `"Email": "correo-malo"`. | `500 Internal Server Error` | `"Mensaje": "FinnFlow injection failed: 402 PAYMENT_REQUIRED - {\"code\":\"invalid_format\",...}"` |
 | **QA-04** | Regla de Negocio (Plazo) | `"Plazo1": 17` (El plazo no es múltiplo de 5, menor a 5 o mayor a 30). | `500 Internal Server Error` | `"Mensaje": "FinnFlow injection failed: 406 NOT_ACCEPTABLE - {\"code\":\"invalid_value\",...}"` |
 | **QA-05** | Regla de Negocio (Montos) | `"MontoAprobado"` supera al `"ValorPropiedad"`. | `500 Internal Server Error` | `"Mensaje": "FinnFlow injection failed: 406 NOT_ACCEPTABLE - {\"code\":\"invalid_value\",...}"` |
+| **QA-06** | SRV01 - Renegociación Hipotecaria | Campos `"NumeroOperacionOriginal"`, `"TipoGarantia"`, `"IncluirGastosOperacionales"`. Pruebas con formato incorrecto (ej. más de 16 caracteres) | `200 OK` (Válido) o `500 Internal Server Error` (Inválido) | `"Application injected successfully"` o `"NumeroOperacionOriginal with invalid value"` |
 
 > ⚠️ **Nota de Arquitectura sobre el Error 500:** El equipo de QA notará que los errores de validación de formulario retornan `500` en lugar de `400`. Esto es **esperado** y fue replicado intencionalmente de un fallo del sistema de Java para no quebrar las integraciones de los frontends actuales.
 

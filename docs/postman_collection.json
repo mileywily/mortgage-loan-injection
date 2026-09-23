@@ -1,170 +1,202 @@
 {
-	"info": {
-		"_postman_id": "bfcl-mortgage-loan-injection",
-		"name": "Mortgage Loan Injection (Go & Legacy)",
-		"description": "Colección para validar manualmente los casos de uso y la paridad extrema del microservicio Hipotecario.",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
-	},
-	"item": [
-		{
-			"name": "1. Happy Path (Inyección Exitosa)",
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"datos_credito\": {\n        \"NumeroSolicitud\": 192269,\n        \"AntiguedadVivienda\": 1,\n        \"EjecutivoComercial\": \"PSOTO\",\n        \"Producto\": 1,\n        \"Objetivo\": 1,\n        \"Destino\": 1,\n        \"FechaAprobacion\": \"2024-01-15\",\n        \"MontoAprobado\": 1688.09,\n        \"ValorPropiedad\": 2300.00,\n        \"ValorContado\": 261.91,\n        \"Plazo1\": 30,\n        \"MesesGracia\": 0,\n        \"Tasa1\": 3.99,\n        \"Spread1\": 0.0\n    },\n    \"participantes\": [\n        {\n            \"Rut\": \"18.015.051-K\",\n            \"TipoParticipacion\": 1,\n            \"Nombre\": \"Pedro\",\n            \"Paterno\": \"Perez\",\n            \"Materno\": \"Perez\",\n            \"FechaNacimiento\": \"04-07-1992\",\n            \"Email\": \"pedro.perez@email.com\"\n        }\n    ]\n}"
-				},
-				"url": {
-					"raw": "http://localhost:8082/v1/bfcl/mortgage-loan/injections",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8082",
-					"path": [
-						"v1",
-						"bfcl",
-						"mortgage-loan",
-						"injections"
-					]
-				},
-				"description": "Valida que un payload correcto retorne un HTTP 200 OK."
-			},
-			"response": []
-		},
-		{
-			"name": "2. DTO Fallo: Missing Participantes",
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"datos_credito\": {\n        \"NumeroSolicitud\": 192269,\n        \"AntiguedadVivienda\": 1,\n        \"EjecutivoComercial\": \"PSOTO\",\n        \"Producto\": 1,\n        \"Objetivo\": 1,\n        \"Destino\": 1,\n        \"FechaAprobacion\": \"2024-01-15\",\n        \"MontoAprobado\": 1688.09,\n        \"ValorPropiedad\": 2300.00,\n        \"ValorContado\": 261.91,\n        \"Plazo1\": 30,\n        \"MesesGracia\": 0,\n        \"Tasa1\": 3.99,\n        \"Spread1\": 0.0\n    },\n    \"participantes\": []\n}"
-				},
-				"url": {
-					"raw": "http://localhost:8082/v1/bfcl/mortgage-loan/injections",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8082",
-					"path": [
-						"v1",
-						"bfcl",
-						"mortgage-loan",
-						"injections"
-					]
-				},
-				"description": "Valida que el rechazo por falta de participantes emule el error 500 Legacy."
-			},
-			"response": []
-		},
-		{
-			"name": "3. Validación Fallo: RUT Formato Inválido",
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"datos_credito\": {\n        \"NumeroSolicitud\": 192269,\n        \"AntiguedadVivienda\": 1,\n        \"EjecutivoComercial\": \"PSOTO\",\n        \"Producto\": 1,\n        \"Objetivo\": 1,\n        \"Destino\": 1,\n        \"FechaAprobacion\": \"2024-01-15\",\n        \"MontoAprobado\": 1688.09,\n        \"ValorPropiedad\": 2300.00,\n        \"ValorContado\": 261.91,\n        \"Plazo1\": 30,\n        \"MesesGracia\": 0,\n        \"Tasa1\": 3.99,\n        \"Spread1\": 0.0\n    },\n    \"participantes\": [\n        {\n            \"Rut\": \"rut-malo\",\n            \"TipoParticipacion\": 1,\n            \"Nombre\": \"Pedro\",\n            \"Paterno\": \"Perez\",\n            \"Materno\": \"Perez\",\n            \"FechaNacimiento\": \"04-07-1992\",\n            \"Email\": \"pedro.perez@email.com\"\n        }\n    ]\n}"
-				},
-				"url": {
-					"raw": "http://localhost:8082/v1/bfcl/mortgage-loan/injections",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8082",
-					"path": [
-						"v1",
-						"bfcl",
-						"mortgage-loan",
-						"injections"
-					]
-				},
-				"description": "Valida que el validador Regex capture el RUT malo y fuerce un 500 emulando 402 PAYMENT_REQUIRED."
-			},
-			"response": []
-		},
-		{
-			"name": "4. Negocio Fallo: Plazo1 Inválido",
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"datos_credito\": {\n        \"NumeroSolicitud\": 192269,\n        \"AntiguedadVivienda\": 1,\n        \"EjecutivoComercial\": \"PSOTO\",\n        \"Producto\": 1,\n        \"Objetivo\": 1,\n        \"Destino\": 1,\n        \"FechaAprobacion\": \"2024-01-15\",\n        \"MontoAprobado\": 1688.09,\n        \"ValorPropiedad\": 2300.00,\n        \"ValorContado\": 261.91,\n        \"Plazo1\": 17,\n        \"MesesGracia\": 0,\n        \"Tasa1\": 3.99,\n        \"Spread1\": 0.0\n    },\n    \"participantes\": [\n        {\n            \"Rut\": \"18.015.051-K\",\n            \"TipoParticipacion\": 1,\n            \"Nombre\": \"Pedro\",\n            \"Paterno\": \"Perez\",\n            \"Materno\": \"Perez\",\n            \"FechaNacimiento\": \"04-07-1992\",\n            \"Email\": \"pedro.perez@email.com\"\n        }\n    ]\n}"
-				},
-				"url": {
-					"raw": "http://localhost:8082/v1/bfcl/mortgage-loan/injections",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8082",
-					"path": [
-						"v1",
-						"bfcl",
-						"mortgage-loan",
-						"injections"
-					]
-				},
-				"description": "Valida que el caso de uso rechace un plazo que no sea múltiplo de 5, emulando el 500 Legacy con 406 NOT_ACCEPTABLE."
-			},
-			"response": []
-		}
-	],
-	"event": [
-		{
-			"listen": "prerequest",
-			"script": {
-				"type": "text/javascript",
-				"exec": [
-					""
-				]
-			}
-		},
-		{
-			"listen": "test",
-			"script": {
-				"type": "text/javascript",
-				"exec": [
-					""
-				]
-			}
-		}
-	],
-	"variable": [
-		{
-			"key": "go_port",
-			"value": "8082",
-			"type": "string"
-		},
-		{
-			"key": "java_port",
-			"value": "8080",
-			"type": "string"
-		}
-	]
+    "info": {
+        "_postman_id": "bfcl-mortgage-loan-injection",
+        "name": "Mortgage Loan Injection (Go & Legacy)",
+        "description": "Colecci\u00c3\u00b3n para validar manualmente los casos de uso y la paridad extrema del microservicio Hipotecario.",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "1. Happy Path (Inyecci\u00c3\u00b3n Exitosa)",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"datos_credito\": {\n        \"NumeroSolicitud\": 192269,\n        \"AntiguedadVivienda\": 1,\n        \"EjecutivoComercial\": \"PSOTO\",\n        \"Producto\": 1,\n        \"Objetivo\": 1,\n        \"Destino\": 1,\n        \"FechaAprobacion\": \"2024-01-15\",\n        \"MontoAprobado\": 1688.09,\n        \"ValorPropiedad\": 2300.00,\n        \"ValorContado\": 261.91,\n        \"Plazo1\": 30,\n        \"MesesGracia\": 0,\n        \"Tasa1\": 3.99,\n        \"Spread1\": 0.0\n    },\n    \"participantes\": [\n        {\n            \"Rut\": \"18.015.051-K\",\n            \"TipoParticipacion\": 1,\n            \"Nombre\": \"Pedro\",\n            \"Paterno\": \"Perez\",\n            \"Materno\": \"Perez\",\n            \"FechaNacimiento\": \"04-07-1992\",\n            \"Email\": \"pedro.perez@email.com\"\n        }\n    ]\n}"
+                },
+                "url": {
+                    "raw": "http://localhost:8082/v1/bfcl/mortgage-loan/injections",
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "8082",
+                    "path": [
+                        "v1",
+                        "bfcl",
+                        "mortgage-loan",
+                        "injections"
+                    ]
+                },
+                "description": "Valida que un payload correcto retorne un HTTP 200 OK."
+            },
+            "response": []
+        },
+        {
+            "name": "2. DTO Fallo: Missing Participantes",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"datos_credito\": {\n        \"NumeroSolicitud\": 192269,\n        \"AntiguedadVivienda\": 1,\n        \"EjecutivoComercial\": \"PSOTO\",\n        \"Producto\": 1,\n        \"Objetivo\": 1,\n        \"Destino\": 1,\n        \"FechaAprobacion\": \"2024-01-15\",\n        \"MontoAprobado\": 1688.09,\n        \"ValorPropiedad\": 2300.00,\n        \"ValorContado\": 261.91,\n        \"Plazo1\": 30,\n        \"MesesGracia\": 0,\n        \"Tasa1\": 3.99,\n        \"Spread1\": 0.0\n    },\n    \"participantes\": []\n}"
+                },
+                "url": {
+                    "raw": "http://localhost:8082/v1/bfcl/mortgage-loan/injections",
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "8082",
+                    "path": [
+                        "v1",
+                        "bfcl",
+                        "mortgage-loan",
+                        "injections"
+                    ]
+                },
+                "description": "Valida que el rechazo por falta de participantes emule el error 500 Legacy."
+            },
+            "response": []
+        },
+        {
+            "name": "3. Validaci\u00c3\u00b3n Fallo: RUT Formato Inv\u00c3\u00a1lido",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"datos_credito\": {\n        \"NumeroSolicitud\": 192269,\n        \"AntiguedadVivienda\": 1,\n        \"EjecutivoComercial\": \"PSOTO\",\n        \"Producto\": 1,\n        \"Objetivo\": 1,\n        \"Destino\": 1,\n        \"FechaAprobacion\": \"2024-01-15\",\n        \"MontoAprobado\": 1688.09,\n        \"ValorPropiedad\": 2300.00,\n        \"ValorContado\": 261.91,\n        \"Plazo1\": 30,\n        \"MesesGracia\": 0,\n        \"Tasa1\": 3.99,\n        \"Spread1\": 0.0\n    },\n    \"participantes\": [\n        {\n            \"Rut\": \"rut-malo\",\n            \"TipoParticipacion\": 1,\n            \"Nombre\": \"Pedro\",\n            \"Paterno\": \"Perez\",\n            \"Materno\": \"Perez\",\n            \"FechaNacimiento\": \"04-07-1992\",\n            \"Email\": \"pedro.perez@email.com\"\n        }\n    ]\n}"
+                },
+                "url": {
+                    "raw": "http://localhost:8082/v1/bfcl/mortgage-loan/injections",
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "8082",
+                    "path": [
+                        "v1",
+                        "bfcl",
+                        "mortgage-loan",
+                        "injections"
+                    ]
+                },
+                "description": "Valida que el validador Regex capture el RUT malo y fuerce un 500 emulando 402 PAYMENT_REQUIRED."
+            },
+            "response": []
+        },
+        {
+            "name": "4. Negocio Fallo: Plazo1 Inv\u00c3\u00a1lido",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"datos_credito\": {\n        \"NumeroSolicitud\": 192269,\n        \"AntiguedadVivienda\": 1,\n        \"EjecutivoComercial\": \"PSOTO\",\n        \"Producto\": 1,\n        \"Objetivo\": 1,\n        \"Destino\": 1,\n        \"FechaAprobacion\": \"2024-01-15\",\n        \"MontoAprobado\": 1688.09,\n        \"ValorPropiedad\": 2300.00,\n        \"ValorContado\": 261.91,\n        \"Plazo1\": 17,\n        \"MesesGracia\": 0,\n        \"Tasa1\": 3.99,\n        \"Spread1\": 0.0\n    },\n    \"participantes\": [\n        {\n            \"Rut\": \"18.015.051-K\",\n            \"TipoParticipacion\": 1,\n            \"Nombre\": \"Pedro\",\n            \"Paterno\": \"Perez\",\n            \"Materno\": \"Perez\",\n            \"FechaNacimiento\": \"04-07-1992\",\n            \"Email\": \"pedro.perez@email.com\"\n        }\n    ]\n}"
+                },
+                "url": {
+                    "raw": "http://localhost:8082/v1/bfcl/mortgage-loan/injections",
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "8082",
+                    "path": [
+                        "v1",
+                        "bfcl",
+                        "mortgage-loan",
+                        "injections"
+                    ]
+                },
+                "description": "Valida que el caso de uso rechace un plazo que no sea m\u00c3\u00baltiplo de 5, emulando el 500 Legacy con 406 NOT_ACCEPTABLE."
+            },
+            "response": []
+        },
+        {
+            "name": "5. SRV01 Renegociacion Hipotecaria",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"datos_credito\": {\n        \"NumeroSolicitud\": 192269,\n        \"AntiguedadVivienda\": 1,\n        \"EjecutivoComercial\": \"PSOTO\",\n        \"Producto\": 1,\n        \"Objetivo\": 1,\n        \"Destino\": 1,\n        \"FechaAprobacion\": \"2024-01-15\",\n        \"MontoAprobado\": 1688.09,\n        \"ValorPropiedad\": 2300.00,\n        \"ValorContado\": 261.91,\n        \"Plazo1\": 30,\n        \"MesesGracia\": 0,\n        \"Tasa1\": 3.99,\n        \"Spread1\": 0.0,\n        \"NumeroOperacionOriginal\": \"OPE-12345\",\n        \"MontoAbono\": 19.20,\n        \"IncluirGastosOperacionales\": 1,\n        \"TipoGarantia\": 2,\n        \"NumeroRenegociacion\": 1,\n        \"SubsidioOriginal\": 1,\n        \"ReduccionInteresesYGC\": 10\n    },\n    \"participantes\": [\n        {\n            \"Rut\": \"18.015.051-K\",\n            \"TipoParticipacion\": 1,\n            \"Nombre\": \"Pedro\",\n            \"Paterno\": \"Perez\",\n            \"Materno\": \"Perez\",\n            \"FechaNacimiento\": \"04-07-1992\"\n        }\n    ]\n}"
+                },
+                "url": {
+                    "raw": "http://localhost:8082/v1/bfcl/mortgage-loan/injections",
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "8082",
+                    "path": [
+                        "v1",
+                        "bfcl",
+                        "mortgage-loan",
+                        "injections"
+                    ]
+                },
+                "description": "Valida Renegociacion"
+            },
+            "response": []
+        }
+    ],
+    "event": [
+        {
+            "listen": "prerequest",
+            "script": {
+                "type": "text/javascript",
+                "exec": [
+                    ""
+                ]
+            }
+        },
+        {
+            "listen": "test",
+            "script": {
+                "type": "text/javascript",
+                "exec": [
+                    ""
+                ]
+            }
+        }
+    ],
+    "variable": [
+        {
+            "key": "go_port",
+            "value": "8082",
+            "type": "string"
+        },
+        {
+            "key": "java_port",
+            "value": "8080",
+            "type": "string"
+        }
+    ]
 }
