@@ -16,6 +16,14 @@ type DatosCreditoDTO struct {
 	MesesGracia        *int     `json:"MesesGracia" binding:"required"`
 	Tasa1              *float64 `json:"Tasa1" binding:"required,gt=0"`
 	Spread1            *float64 `json:"Spread1" binding:"required,gte=0"`
+
+	NumeroOperacionOriginal    *string  `json:"NumeroOperacionOriginal,omitempty" binding:"omitempty,max=16"`
+	MontoAbono                 *float64 `json:"MontoAbono,omitempty"`
+	IncluirGastosOperacionales *int     `json:"IncluirGastosOperacionales,omitempty"`
+	TipoGarantia               *int     `json:"TipoGarantia,omitempty"`
+	NumeroRenegociacion        *int     `json:"NumeroRenegociacion,omitempty"`
+	SubsidioOriginal           *int     `json:"SubsidioOriginal,omitempty"`
+	ReduccionInteresesYGC      *int     `json:"ReduccionInteresesYGC,omitempty"`
 }
 
 type ParticipanteDTO struct {

@@ -16,6 +16,14 @@ type DatosCredito struct {
 	MesesGracia        int
 	Tasa1              float64
 	Spread1            float64
+
+	NumeroOperacionOriginal    *string  `json:"NumeroOperacionOriginal,omitempty"`
+	MontoAbono                 *float64 `json:"MontoAbono,omitempty"`
+	IncluirGastosOperacionales *int     `json:"IncluirGastosOperacionales,omitempty"`
+	TipoGarantia               *int     `json:"TipoGarantia,omitempty"`
+	NumeroRenegociacion        *int     `json:"NumeroRenegociacion,omitempty"`
+	SubsidioOriginal           *int     `json:"SubsidioOriginal,omitempty"`
+	ReduccionInteresesYGC      *int     `json:"ReduccionInteresesYGC,omitempty"`
 }
 
 type Participante struct {

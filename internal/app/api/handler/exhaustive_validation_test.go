@@ -94,6 +94,26 @@ func getValidJSON() map[string]interface{} {
 // 1. DatosCreditoValidationTest
 // ---------------------------------------------------------
 
+func TestLegacy_SRV01_Renegociacion_Valid(t *testing.T) {
+	router := setupExhaustiveRouter()
+	body := getValidJSON()
+	body["datos_credito"].(map[string]interface{})["NumeroOperacionOriginal"] = "OPE-12345"
+	body["datos_credito"].(map[string]interface{})["TipoGarantia"] = 2
+	b, _ := json.Marshal(body)
+	w := executeRequest(router, string(b))
+	assert.Equal(t, http.StatusOK, w.Code)
+}
+
+func TestLegacy_SRV01_Renegociacion_NumeroOperacionOriginalTooLong(t *testing.T) {
+	router := setupExhaustiveRouter()
+	body := getValidJSON()
+	body["datos_credito"].(map[string]interface{})["NumeroOperacionOriginal"] = "12345678901234567" // 17 chars
+	b, _ := json.Marshal(body)
+	w := executeRequest(router, string(b))
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
+	assert.Contains(t, w.Body.String(), "NumeroOperacionOriginal with invalid value")
+}
+
 func TestLegacy_DatosCredito_Valid(t *testing.T) {
 	router := setupExhaustiveRouter()
 	validBody, _ := json.Marshal(getValidJSON())
