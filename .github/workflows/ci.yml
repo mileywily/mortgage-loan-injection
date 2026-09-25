@@ -65,15 +65,13 @@ jobs:
         # uses: aws-actions/configure-aws-credentials@v4 ...
         run: echo "Configuring AWS or generic auth if needed"
 
-      - name: Nullplatform Build
+      - name: Build Docker Image
+        run: docker build -t mortgage-loan-injection:${{ github.sha }} .
+
+      - name: Create Nullplatform Build
         uses: nullplatform/github-action-build@v1
         with:
           api-key: ${{ secrets.NULLPLATFORM_API_KEY }}
           app-id: api-bfcl-mortgage-loans-injection
-
-      - name: Nullplatform Release (Deploy to QA/Dev)
-        uses: nullplatform/github-action-release@v1
-        with:
-          api-key: ${{ secrets.NULLPLATFORM_API_KEY }}
-          app-id: api-bfcl-mortgage-loans-injection
-          env: qa # Puedes cambiar esto o parametrizarlo
+          # Nullplatform automatically triggers the release in the environment
+          # if Continuous Deployment (CD) is enabled for the Scope in the UI.
