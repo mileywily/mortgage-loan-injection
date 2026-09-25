@@ -1,0 +1,14 @@
+version: "1"
+application:
+  name: api-bfcl-mortgage-loans-injection
+service:
+  name: api
+  type: web
+  ports:
+    - port: 8081
+      name: http
+  healthcheck:
+    path: /health # Debemos asegurarnos de que la API de Go responda 200 OK en este endpoint
+  resources:
+    cpu: 100m
+    memory: 128Mi

@@ -1,6 +1,6 @@
 module mortgage-loan-injection
 
-go 1.26.0
+go 1.27.0
 
 replace (
 	gitlab.falabella.tech/fif/corp/banking-platforms/cross/go-libs/config-fif => gitlab.falabella.tech/fif/corp/banking-platforms/cross/go-libs/config-fif.git v1.0.0

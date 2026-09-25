@@ -1,50 +1,139 @@
-package mapper
+package mapper_test
 
 import (
-	"mortgage-loan-injection/internal/app/api/dto"
 	"testing"
+
 	"github.com/stretchr/testify/assert"
+
+	"mortgage-loan-injection/internal/app/api/dto"
+	"mortgage-loan-injection/internal/app/api/mapper"
+	"mortgage-loan-injection/internal/core/domain"
 )
 
 func TestToDomainDatosCredito(t *testing.T) {
-	num := 123
-	ant := 5
-	ejec := "Juan"
-	prod := 1
-	obj := 2
-	dest := 3
-	monto := 100.5
-	val := 200.5
-	fecha := "2023-01-01"
-	cont := 100.0
-	plazo1 := 10
-	meses := 2
+	num := "OPE-123"
+	numSol := 123
+	antiguedad := 1
+	ejecutivo := "Juan"
+	producto := 1
+	objetivo := 1
+	destino := 1
+	monto := 100.0
+	valor := 200.0
+	fecha := "2024-01-01"
+	valorC := 10.0
+	plazo := 30
+	meses := 0
 	tasa := 3.5
 	spread := 1.0
 
-	dtoData := &dto.DatosCreditoDTO{
-		NumeroSolicitud:    &num,
-		AntiguedadVivienda: &ant,
-		EjecutivoComercial: &ejec,
-		Producto:           &prod,
-		Objetivo:           &obj,
-		Destino:            &dest,
-		MontoAprobado:      &monto,
-		ValorPropiedad:     &val,
-		FechaAprobacion:    &fecha,
-		ValorContado:       &cont,
-		Plazo1:             &plazo1,
-		MesesGracia:        &meses,
-		Tasa1:              &tasa,
-		Spread1:            &spread,
+	d := &dto.DatosCreditoDTO{
+		NumeroOperacionOriginal: &num,
+		NumeroSolicitud: &numSol,
+		AntiguedadVivienda: &antiguedad,
+		EjecutivoComercial: &ejecutivo,
+		Producto: &producto,
+		Objetivo: &objetivo,
+		Destino: &destino,
+		MontoAprobado: &monto,
+		ValorPropiedad: &valor,
+		FechaAprobacion: &fecha,
+		ValorContado: &valorC,
+		Plazo1: &plazo,
+		MesesGracia: &meses,
+		Tasa1: &tasa,
+		Spread1: &spread,
 	}
-
-	domainData := ToDomainDatosCredito(dtoData)
-	assert.Equal(t, num, domainData.NumeroSolicitud)
-	assert.Equal(t, ant, domainData.AntiguedadVivienda)
+	res := mapper.ToDomainDatosCredito(d)
+	assert.NotNil(t, res)
+	assert.Equal(t, "OPE-123", *res.NumeroOperacionOriginal)
 }
 
-func TestToDomainDatosCredito_Nil(t *testing.T) {
-	domainData := ToDomainDatosCredito(nil)
-	assert.Equal(t, 0, domainData.NumeroSolicitud)
+func TestToDomainParticipantes(t *testing.T) {
+	rut := "1-9"
+	tipo := 1
+	nombre := "Test"
+	paterno := "P"
+	materno := "M"
+	fecha := "2000-01-01"
+
+	d := []dto.ParticipanteDTO{
+		{Rut: &rut, TipoParticipacion: &tipo, Nombre: &nombre, Paterno: &paterno, Materno: &materno, FechaNacimiento: &fecha},
+	}
+	res := mapper.ToDomainParticipantes(d)
+	assert.Len(t, res, 1)
+	assert.Equal(t, "Test", res[0].Nombre)
+}
+
+func TestToDomainPropiedades(t *testing.T) {
+	comuna := 1
+	tipo := 1
+	antiguedad := 1
+	direccion := "Dir"
+	numero := 123
+
+	d := []dto.PropiedadDTO{
+		{Comuna: &comuna, TipoInmueble: &tipo, Antiguedad: &antiguedad, Direccion: &direccion, Numero: &numero},
+	}
+	res := mapper.ToDomainPropiedades(d)
+	assert.Len(t, res, 1)
+	assert.Equal(t, 1, res[0].Comuna)
+}
+
+func TestToDomainInyeccionRequest(t *testing.T) {
+	num := "OPE-123"
+	numSol := 123
+	antiguedad := 1
+	ejecutivo := "Juan"
+	producto := 1
+	objetivo := 1
+	destino := 1
+	monto := 100.0
+	valor := 200.0
+	fecha := "2024-01-01"
+	valorC := 10.0
+	plazo := 30
+	meses := 0
+	tasa := 3.5
+	spread := 1.0
+
+	rut := "1-9"
+	tipo := 1
+	nombre := "P1"
+	paterno := "P"
+	materno := "M"
+	
+	comuna := 1
+	direccion := "Dir"
+	numero := 123
+	
+	d := &dto.InyeccionRequestDTO{
+		DatosCredito: &dto.DatosCreditoDTO{
+			NumeroOperacionOriginal: &num, NumeroSolicitud: &numSol, AntiguedadVivienda: &antiguedad,
+			EjecutivoComercial: &ejecutivo, Producto: &producto, Objetivo: &objetivo, Destino: &destino,
+			MontoAprobado: &monto, ValorPropiedad: &valor, FechaAprobacion: &fecha, ValorContado: &valorC,
+			Plazo1: &plazo, MesesGracia: &meses, Tasa1: &tasa, Spread1: &spread,
+		},
+		Participantes: []dto.ParticipanteDTO{{Nombre: &nombre, Rut: &rut, TipoParticipacion: &tipo, Paterno: &paterno, Materno: &materno, FechaNacimiento: &fecha}},
+		Propiedades:   []dto.PropiedadDTO{{Comuna: &comuna, TipoInmueble: &tipo, Antiguedad: &antiguedad, Direccion: &direccion, Numero: &numero}},
+	}
+	res := mapper.ToDomainInyeccionRequest(d)
+	assert.NotNil(t, res.DatosCredito)
+	assert.Len(t, res.Participantes, 1)
+	assert.Len(t, res.Propiedades, 1)
+}
+
+func TestToDTOInyeccionResponse(t *testing.T) {
+	status := 200
+	msg := "Success"
+	num := 123
+	d := domain.InyeccionResponse{
+		StatusCode:      &status,
+		Mensaje:         &msg,
+		NumeroSolicitud: &num,
+	}
+	res := mapper.ToDTOInyeccionResponse(d)
+	assert.Equal(t, 200, *res.StatusCode)
+	assert.Equal(t, "Success", *res.Mensaje)
+	assert.Equal(t, 123, *res.NumeroSolicitud)
 }
