@@ -51,32 +51,32 @@ jobs:
           path: ./
           extra_args: --debug --only-verified
 
-  nullplatform-deploy:
-    name: Nullplatform Build & Release
-    runs-on: ubuntu-latest
-    needs: [build-and-test, security-scan]
-    if: github.event_name == 'push' # Solo desplegar si se hizo merge a master
-
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Configure AWS Credentials (Opcional, si Nullplatform lo requiere)
-        # uses: aws-actions/configure-aws-credentials@v4 ...
-        run: echo "Configuring AWS or generic auth if needed"
-
-      - name: Build Docker Image
-        run: docker build -t mortgage-loan-injection:${{ github.sha }} .
-
-      - name: Login to Nullplatform
-        uses: nullplatform/github-action-login@v1
-        with:
-          api-key: ${{ secrets.NULLPLATFORM_API_KEY }}
-
-      - name: Create Nullplatform Build
-        uses: nullplatform/github-action-build@v1
-        with:
-          action: create
-          application-id: api-bfcl-mortgage-loans-injection
-          # Nullplatform automatically triggers the release in the environment
-          # if Continuous Deployment (CD) is enabled for the Scope in the UI.
+#  nullplatform-deploy:
+#    name: Nullplatform Build & Release
+#    runs-on: ubuntu-latest
+#    needs: [build-and-test, security-scan]
+#    if: github.event_name == 'push' # Solo desplegar si se hizo merge a master
+#
+#    steps:
+#      - name: Checkout Repository
+#        uses: actions/checkout@v4
+#
+#      - name: Configure AWS Credentials (Opcional, si Nullplatform lo requiere)
+#        # uses: aws-actions/configure-aws-credentials@v4 ...
+#        run: echo "Configuring AWS or generic auth if needed"
+#
+#      - name: Build Docker Image
+#        run: docker build -t mortgage-loan-injection:${{ github.sha }} .
+#
+#      - name: Login to Nullplatform
+#        uses: nullplatform/github-action-login@v1
+#        with:
+#          api-key: ${{ secrets.NULLPLATFORM_API_KEY }}
+#
+#      - name: Create Nullplatform Build
+#        uses: nullplatform/github-action-build@v1
+#        with:
+#          action: create
+#          application-id: api-bfcl-mortgage-loans-injection
+#          # Nullplatform automatically triggers the release in the environment
+#          # if Continuous Deployment (CD) is enabled for the Scope in the UI.
