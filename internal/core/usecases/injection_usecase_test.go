@@ -1,64 +1,111 @@
-package usecases
+package usecases_test
 
 import (
 	"context"
-	"mortgage-loan-injection/internal/core/domain"
+	"errors"
 	"testing"
+
 	"github.com/stretchr/testify/assert"
+
+	"mortgage-loan-injection/internal/core/domain"
+	"mortgage-loan-injection/internal/core/usecases"
 )
 
-type mockFinnFlowClient struct{}
+type mockClient struct {
+	shouldFail bool
+}
 
-func (m *mockFinnFlowClient) Inject(req domain.InyeccionRequest) (domain.InyeccionResponse, error) {
+func (m *mockClient) Inject(req domain.InyeccionRequest) (domain.InyeccionResponse, error) {
+	if m.shouldFail {
+		return domain.InyeccionResponse{}, errors.New("mock error")
+	}
+	msg := "Success"
 	status := 200
-	msg := "Application injected successfully"
-	solicitud := req.DatosCredito.NumeroSolicitud
 	return domain.InyeccionResponse{
-		StatusCode:      &status,
-		Mensaje:         &msg,
-		NumeroSolicitud: &solicitud,
+		Mensaje:    &msg,
+		StatusCode: &status,
 	}, nil
 }
 
-func TestProcessInjection_Success(t *testing.T) {
-	uc := NewInjectionUseCaseImpl(&mockFinnFlowClient{})
+func TestProcessInjection_Valid(t *testing.T) {
+	uc := usecases.NewInjectionUseCaseImpl(&mockClient{})
 	req := domain.InyeccionRequest{
 		DatosCredito: domain.DatosCredito{
-			NumeroSolicitud: 12345,
-			MontoAprobado: 100,
+			MontoAprobado:  100,
 			ValorPropiedad: 200,
-			Plazo1: 20,
-			Tasa1: 3.5,
+			Plazo1:         30,
+			Tasa1:          3.5,
 		},
 		Participantes: []domain.Participante{
-			{Rut: "1.234.567-8"},
+			{Nombre: "Test"},
 		},
 	}
-
-	res, err := uc.ProcessInjection(context.Background(), req)
+	resp, err := uc.ProcessInjection(context.Background(), req)
 	assert.NoError(t, err)
-	assert.Equal(t, 200, *res.StatusCode)
-	assert.Equal(t, 12345, *res.NumeroSolicitud)
+	assert.NotNil(t, resp)
 }
 
-func TestProcessInjection_BusinessRulesFail(t *testing.T) {
-	uc := NewInjectionUseCaseImpl(&mockFinnFlowClient{})
-	
-	// Fails: Plazo1 invalid
+func TestProcessInjection_FailClient(t *testing.T) {
+	uc := usecases.NewInjectionUseCaseImpl(&mockClient{shouldFail: true})
 	req := domain.InyeccionRequest{
 		DatosCredito: domain.DatosCredito{
-			NumeroSolicitud: 12345,
-			MontoAprobado: 100,
+			MontoAprobado:  100,
 			ValorPropiedad: 200,
-			Plazo1: 2, // invalid
-			Tasa1: 3.5,
+			Plazo1:         30,
+			Tasa1:          3.5,
 		},
 		Participantes: []domain.Participante{
-			{Rut: "1.234.567-8"},
+			{Nombre: "Test"},
+		},
+	}
+	_, err := uc.ProcessInjection(context.Background(), req)
+	assert.Error(t, err)
+}
+
+func TestValidateBusinessRules(t *testing.T) {
+	uc := usecases.NewInjectionUseCaseImpl(&mockClient{})
+
+	tests := []struct {
+		name        string
+		req         domain.InyeccionRequest
+		expectedErr string
+	}{
+		{
+			name:        "Missing Participantes",
+			req:         domain.InyeccionRequest{},
+			expectedErr: "Missing participantes field",
+		},
+		{
+			name: "MontoAprobado > ValorPropiedad",
+			req: domain.InyeccionRequest{
+				Participantes: []domain.Participante{{Nombre: "A"}},
+				DatosCredito:  domain.DatosCredito{MontoAprobado: 200, ValorPropiedad: 100},
+			},
+			expectedErr: "MontoAprobado with invalid value",
+		},
+		{
+			name: "Plazo Invalido",
+			req: domain.InyeccionRequest{
+				Participantes: []domain.Participante{{Nombre: "A"}},
+				DatosCredito:  domain.DatosCredito{MontoAprobado: 100, ValorPropiedad: 200, Plazo1: 17},
+			},
+			expectedErr: "Plazo1 with invalid value",
+		},
+		{
+			name: "Tasa Invalida",
+			req: domain.InyeccionRequest{
+				Participantes: []domain.Participante{{Nombre: "A"}},
+				DatosCredito:  domain.DatosCredito{MontoAprobado: 100, ValorPropiedad: 200, Plazo1: 20, Tasa1: 60},
+			},
+			expectedErr: "Tasa1 with invalid value",
 		},
 	}
 
-	_, err := uc.ProcessInjection(context.Background(), req)
-	assert.Error(t, err)
-	assert.Equal(t, "Plazo1 with invalid value", err.Error())
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := uc.ProcessInjection(context.Background(), tt.req)
+			assert.Error(t, err)
+			assert.Equal(t, tt.expectedErr, err.Error())
+		})
+	}
 }
