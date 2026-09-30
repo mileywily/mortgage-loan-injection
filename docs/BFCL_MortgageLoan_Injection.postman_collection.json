@@ -1,0 +1,696 @@
+{
+  "info": {
+    "_postman_id": "bfcl-mortgage-loan-injection-v1",
+    "name": "BFCL Mortgage Loan Injection - Plan de Paridad v1.2.0",
+    "description": "Colección completa de pruebas de paridad entre el legado Java y el microservicio Go.\n\nAntes de correr:\n1. Seleccionar el ambiente correspondiente (Local Mock / QA)\n2. Encender el Mock si es prueba local:\n   - Pestaña 1: go run cmd/mock/main.go\n   - Pestaña 2: PORT=8081 FINNFLOW_URL=http://127.0.0.1:8083 FINNFLOW_KEY=dummy FINNFLOW_SECRET=dummy go run cmd/api/main.go",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8081",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "HEALTH CHECK",
+      "item": [
+        {
+          "name": "TC-00 Health Check",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-00: Status debe ser 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('TC-00: Body contiene status UP', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.status).to.eql('UP');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            },
+            "description": "Verifica que el servidor esté activo y saludable."
+          }
+        }
+      ]
+    },
+    {
+      "name": "VALIDACIONES HTTP (400)",
+      "item": [
+        {
+          "name": "TC-01 Body vacío",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-01: Status debe ser 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test('TC-01: Body contiene code invalid_format', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql('invalid_format');",
+                  "    pm.expect(json.message).to.include('DatosCredito');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{base_url}}/v1/bfcl/mortgage-loan/injections",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "bfcl", "mortgage-loan", "injections"]
+            },
+            "description": "Enviar un JSON vacío debe retornar 400 indicando campos requeridos faltantes."
+          }
+        },
+        {
+          "name": "TC-02 Sin datos_credito",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-02: Status debe ser 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test('TC-02: Body menciona DatosCredito como requerido', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql('invalid_format');",
+                  "    pm.expect(json.message).to.include('DatosCredito');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"participantes\": [\n    {\n      \"Rut\": \"18.015.051-K\",\n      \"TipoParticipacion\": 1,\n      \"Nombre\": \"Pedro\",\n      \"Paterno\": \"Perez\",\n      \"Materno\": \"Perez\",\n      \"FechaNacimiento\": \"04-07-1992\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/v1/bfcl/mortgage-loan/injections",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "bfcl", "mortgage-loan", "injections"]
+            }
+          }
+        },
+        {
+          "name": "TC-03 Sin participantes",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-03: Status debe ser 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test('TC-03: Body menciona Participantes como requerido', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql('invalid_format');",
+                  "    pm.expect(json.message).to.include('Participantes');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"datos_credito\": {\n    \"NumeroSolicitud\": 192269,\n    \"AntiguedadVivienda\": 1,\n    \"EjecutivoComercial\": \"PSOTO\",\n    \"Producto\": 1,\n    \"Objetivo\": 1,\n    \"Destino\": 1,\n    \"FechaAprobacion\": \"2024-01-15\",\n    \"MontoAprobado\": 1688.09,\n    \"ValorPropiedad\": 2300.00,\n    \"ValorContado\": 261.91,\n    \"Plazo1\": 30,\n    \"MesesGracia\": 0,\n    \"Tasa1\": 3.99,\n    \"Spread1\": 0.0\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/v1/bfcl/mortgage-loan/injections",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "bfcl", "mortgage-loan", "injections"]
+            }
+          }
+        },
+        {
+          "name": "TC-04 Participantes vacío []",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-04: Status debe ser 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test('TC-04: Body menciona Participantes con error min', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql('invalid_format');",
+                  "    pm.expect(json.message).to.include('Participantes');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"datos_credito\": {\n    \"NumeroSolicitud\": 192269,\n    \"AntiguedadVivienda\": 1,\n    \"EjecutivoComercial\": \"PSOTO\",\n    \"Producto\": 1,\n    \"Objetivo\": 1,\n    \"Destino\": 1,\n    \"FechaAprobacion\": \"2024-01-15\",\n    \"MontoAprobado\": 1688.09,\n    \"ValorPropiedad\": 2300.00,\n    \"ValorContado\": 261.91,\n    \"Plazo1\": 30,\n    \"MesesGracia\": 0,\n    \"Tasa1\": 3.99,\n    \"Spread1\": 0.0\n  },\n  \"participantes\": []\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/v1/bfcl/mortgage-loan/injections",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "bfcl", "mortgage-loan", "injections"]
+            }
+          }
+        },
+        {
+          "name": "TC-05 Rut con formato inválido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-05: Status debe ser 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test('TC-05: Body menciona Rut con error de patrón', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql('invalid_format');",
+                  "    pm.expect(json.message).to.include('Rut');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"datos_credito\": {\n    \"NumeroSolicitud\": 192269,\n    \"AntiguedadVivienda\": 1,\n    \"EjecutivoComercial\": \"PSOTO\",\n    \"Producto\": 1,\n    \"Objetivo\": 1,\n    \"Destino\": 1,\n    \"FechaAprobacion\": \"2024-01-15\",\n    \"MontoAprobado\": 1688.09,\n    \"ValorPropiedad\": 2300.00,\n    \"ValorContado\": 261.91,\n    \"Plazo1\": 30,\n    \"MesesGracia\": 0,\n    \"Tasa1\": 3.99,\n    \"Spread1\": 0.0\n  },\n  \"participantes\": [\n    {\n      \"Rut\": \"18015051K\",\n      \"TipoParticipacion\": 1,\n      \"Nombre\": \"Pedro\",\n      \"Paterno\": \"Perez\",\n      \"Materno\": \"Perez\",\n      \"FechaNacimiento\": \"04-07-1992\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/v1/bfcl/mortgage-loan/injections",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "bfcl", "mortgage-loan", "injections"]
+            },
+            "description": "Rut sin puntos ni guión. Formato requerido: XX.XXX.XXX-X"
+          }
+        },
+        {
+          "name": "TC-06 FechaNacimiento formato inválido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-06: Status debe ser 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test('TC-06: Body menciona FechaNacimiento con error de patrón', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql('invalid_format');",
+                  "    pm.expect(json.message).to.include('FechaNacimiento');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"datos_credito\": {\n    \"NumeroSolicitud\": 192269,\n    \"AntiguedadVivienda\": 1,\n    \"EjecutivoComercial\": \"PSOTO\",\n    \"Producto\": 1,\n    \"Objetivo\": 1,\n    \"Destino\": 1,\n    \"FechaAprobacion\": \"2024-01-15\",\n    \"MontoAprobado\": 1688.09,\n    \"ValorPropiedad\": 2300.00,\n    \"ValorContado\": 261.91,\n    \"Plazo1\": 30,\n    \"MesesGracia\": 0,\n    \"Tasa1\": 3.99,\n    \"Spread1\": 0.0\n  },\n  \"participantes\": [\n    {\n      \"Rut\": \"18.015.051-K\",\n      \"TipoParticipacion\": 1,\n      \"Nombre\": \"Pedro\",\n      \"Paterno\": \"Perez\",\n      \"Materno\": \"Perez\",\n      \"FechaNacimiento\": \"1992-07-04\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/v1/bfcl/mortgage-loan/injections",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "bfcl", "mortgage-loan", "injections"]
+            },
+            "description": "Fecha en formato ISO (YYYY-MM-DD). Formato requerido: DD-MM-YYYY"
+          }
+        },
+        {
+          "name": "TC-07 MontoAprobado en cero",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-07: Status debe ser 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test('TC-07: Body menciona MontoAprobado', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql('invalid_format');",
+                  "    pm.expect(json.message).to.include('MontoAprobado');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"datos_credito\": {\n    \"NumeroSolicitud\": 192269,\n    \"AntiguedadVivienda\": 1,\n    \"EjecutivoComercial\": \"PSOTO\",\n    \"Producto\": 1,\n    \"Objetivo\": 1,\n    \"Destino\": 1,\n    \"FechaAprobacion\": \"2024-01-15\",\n    \"MontoAprobado\": 0,\n    \"ValorPropiedad\": 2300.00,\n    \"ValorContado\": 261.91,\n    \"Plazo1\": 30,\n    \"MesesGracia\": 0,\n    \"Tasa1\": 3.99,\n    \"Spread1\": 0.0\n  },\n  \"participantes\": [\n    {\n      \"Rut\": \"18.015.051-K\",\n      \"TipoParticipacion\": 1,\n      \"Nombre\": \"Pedro\",\n      \"Paterno\": \"Perez\",\n      \"Materno\": \"Perez\",\n      \"FechaNacimiento\": \"04-07-1992\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/v1/bfcl/mortgage-loan/injections",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "bfcl", "mortgage-loan", "injections"]
+            }
+          }
+        },
+        {
+          "name": "TC-08 EjecutivoComercial > 20 chars",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-08: Status debe ser 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test('TC-08: Body menciona EjecutivoComercial', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql('invalid_format');",
+                  "    pm.expect(json.message).to.include('EjecutivoComercial');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"datos_credito\": {\n    \"NumeroSolicitud\": 192269,\n    \"AntiguedadVivienda\": 1,\n    \"EjecutivoComercial\": \"NOMBREMUYLARGOPARAELCAMPOO\",\n    \"Producto\": 1,\n    \"Objetivo\": 1,\n    \"Destino\": 1,\n    \"FechaAprobacion\": \"2024-01-15\",\n    \"MontoAprobado\": 1688.09,\n    \"ValorPropiedad\": 2300.00,\n    \"ValorContado\": 261.91,\n    \"Plazo1\": 30,\n    \"MesesGracia\": 0,\n    \"Tasa1\": 3.99,\n    \"Spread1\": 0.0\n  },\n  \"participantes\": [\n    {\n      \"Rut\": \"18.015.051-K\",\n      \"TipoParticipacion\": 1,\n      \"Nombre\": \"Pedro\",\n      \"Paterno\": \"Perez\",\n      \"Materno\": \"Perez\",\n      \"FechaNacimiento\": \"04-07-1992\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/v1/bfcl/mortgage-loan/injections",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "bfcl", "mortgage-loan", "injections"]
+            }
+          }
+        },
+        {
+          "name": "TC-09 Email participante inválido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-09: Status debe ser 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test('TC-09: Body menciona Email', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql('invalid_format');",
+                  "    pm.expect(json.message).to.include('Email');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"datos_credito\": {\n    \"NumeroSolicitud\": 192269,\n    \"AntiguedadVivienda\": 1,\n    \"EjecutivoComercial\": \"PSOTO\",\n    \"Producto\": 1,\n    \"Objetivo\": 1,\n    \"Destino\": 1,\n    \"FechaAprobacion\": \"2024-01-15\",\n    \"MontoAprobado\": 1688.09,\n    \"ValorPropiedad\": 2300.00,\n    \"ValorContado\": 261.91,\n    \"Plazo1\": 30,\n    \"MesesGracia\": 0,\n    \"Tasa1\": 3.99,\n    \"Spread1\": 0.0\n  },\n  \"participantes\": [\n    {\n      \"Rut\": \"18.015.051-K\",\n      \"TipoParticipacion\": 1,\n      \"Nombre\": \"Pedro\",\n      \"Paterno\": \"Perez\",\n      \"Materno\": \"Perez\",\n      \"FechaNacimiento\": \"04-07-1992\",\n      \"Email\": \"esto-no-es-un-email\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/v1/bfcl/mortgage-loan/injections",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "bfcl", "mortgage-loan", "injections"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "REGLAS DE NEGOCIO (500)",
+      "item": [
+        {
+          "name": "TC-10 MontoAprobado > ValorPropiedad",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-10: Status debe ser 500', function () {",
+                  "    pm.response.to.have.status(500);",
+                  "});",
+                  "pm.test('TC-10: Body contiene StatusCode 500 y mensaje de monto', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.StatusCode).to.eql(500);",
+                  "    pm.expect(json.Mensaje).to.include('MontoAprobado with invalid value');",
+                  "    pm.expect(json.NumeroSolicitud).to.be.null;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"datos_credito\": {\n    \"NumeroSolicitud\": 192269,\n    \"AntiguedadVivienda\": 1,\n    \"EjecutivoComercial\": \"PSOTO\",\n    \"Producto\": 1,\n    \"Objetivo\": 1,\n    \"Destino\": 1,\n    \"FechaAprobacion\": \"2024-01-15\",\n    \"MontoAprobado\": 9999.00,\n    \"ValorPropiedad\": 2300.00,\n    \"ValorContado\": 261.91,\n    \"Plazo1\": 30,\n    \"MesesGracia\": 0,\n    \"Tasa1\": 3.99,\n    \"Spread1\": 0.0\n  },\n  \"participantes\": [\n    {\n      \"Rut\": \"18.015.051-K\",\n      \"TipoParticipacion\": 1,\n      \"Nombre\": \"Pedro\",\n      \"Paterno\": \"Perez\",\n      \"Materno\": \"Perez\",\n      \"FechaNacimiento\": \"04-07-1992\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/v1/bfcl/mortgage-loan/injections",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "bfcl", "mortgage-loan", "injections"]
+            },
+            "description": "MontoAprobado (9999) > ValorPropiedad (2300). Regla de negocio de dominio."
+          }
+        },
+        {
+          "name": "TC-11 Plazo1 inválido (17 años)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-11: Status debe ser 500', function () {",
+                  "    pm.response.to.have.status(500);",
+                  "});",
+                  "pm.test('TC-11: Body contiene StatusCode 500 y mensaje de plazo', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.StatusCode).to.eql(500);",
+                  "    pm.expect(json.Mensaje).to.include('Plazo1 with invalid value');",
+                  "    pm.expect(json.NumeroSolicitud).to.be.null;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"datos_credito\": {\n    \"NumeroSolicitud\": 192269,\n    \"AntiguedadVivienda\": 1,\n    \"EjecutivoComercial\": \"PSOTO\",\n    \"Producto\": 1,\n    \"Objetivo\": 1,\n    \"Destino\": 1,\n    \"FechaAprobacion\": \"2024-01-15\",\n    \"MontoAprobado\": 1688.09,\n    \"ValorPropiedad\": 2300.00,\n    \"ValorContado\": 261.91,\n    \"Plazo1\": 17,\n    \"MesesGracia\": 0,\n    \"Tasa1\": 3.99,\n    \"Spread1\": 0.0\n  },\n  \"participantes\": [\n    {\n      \"Rut\": \"18.015.051-K\",\n      \"TipoParticipacion\": 1,\n      \"Nombre\": \"Pedro\",\n      \"Paterno\": \"Perez\",\n      \"Materno\": \"Perez\",\n      \"FechaNacimiento\": \"04-07-1992\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/v1/bfcl/mortgage-loan/injections",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "bfcl", "mortgage-loan", "injections"]
+            },
+            "description": "Plazo debe ser 5, 10, 15, 20, 25 o 30 años. El valor 17 es inválido."
+          }
+        },
+        {
+          "name": "TC-12 Tasa1 fuera de rango (0.05%)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-12: Status debe ser 500', function () {",
+                  "    pm.response.to.have.status(500);",
+                  "});",
+                  "pm.test('TC-12: Body contiene StatusCode 500 y mensaje de tasa', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.StatusCode).to.eql(500);",
+                  "    pm.expect(json.Mensaje).to.include('Tasa1 with invalid value');",
+                  "    pm.expect(json.NumeroSolicitud).to.be.null;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"datos_credito\": {\n    \"NumeroSolicitud\": 192269,\n    \"AntiguedadVivienda\": 1,\n    \"EjecutivoComercial\": \"PSOTO\",\n    \"Producto\": 1,\n    \"Objetivo\": 1,\n    \"Destino\": 1,\n    \"FechaAprobacion\": \"2024-01-15\",\n    \"MontoAprobado\": 1688.09,\n    \"ValorPropiedad\": 2300.00,\n    \"ValorContado\": 261.91,\n    \"Plazo1\": 30,\n    \"MesesGracia\": 0,\n    \"Tasa1\": 0.05,\n    \"Spread1\": 0.0\n  },\n  \"participantes\": [\n    {\n      \"Rut\": \"18.015.051-K\",\n      \"TipoParticipacion\": 1,\n      \"Nombre\": \"Pedro\",\n      \"Paterno\": \"Perez\",\n      \"Materno\": \"Perez\",\n      \"FechaNacimiento\": \"04-07-1992\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/v1/bfcl/mortgage-loan/injections",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "bfcl", "mortgage-loan", "injections"]
+            },
+            "description": "Tasa1 debe estar entre 0.1 y 50. El valor 0.05 está por debajo del mínimo."
+          }
+        }
+      ]
+    },
+    {
+      "name": "HAPPY PATH Y OPCIONALES (200)",
+      "item": [
+        {
+          "name": "TC-13 Happy Path - Payload mínimo válido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-13: Status debe ser 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('TC-13: Body contiene StatusCode 200', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.StatusCode).to.eql(200);",
+                  "});",
+                  "pm.test('TC-13: Body contiene Mensaje', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.Mensaje).to.be.a('string').and.not.be.empty;",
+                  "});",
+                  "pm.test('TC-13: Body contiene NumeroSolicitud', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.NumeroSolicitud).to.eql(192269);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"datos_credito\": {\n    \"NumeroSolicitud\": 192269,\n    \"AntiguedadVivienda\": 1,\n    \"EjecutivoComercial\": \"PSOTO\",\n    \"Producto\": 1,\n    \"Objetivo\": 1,\n    \"Destino\": 1,\n    \"FechaAprobacion\": \"2024-01-15\",\n    \"MontoAprobado\": 1688.09,\n    \"ValorPropiedad\": 2300.00,\n    \"ValorContado\": 261.91,\n    \"Plazo1\": 30,\n    \"MesesGracia\": 0,\n    \"Tasa1\": 3.99,\n    \"Spread1\": 0.0\n  },\n  \"participantes\": [\n    {\n      \"Rut\": \"18.015.051-K\",\n      \"TipoParticipacion\": 1,\n      \"Nombre\": \"Pedro\",\n      \"Paterno\": \"Perez\",\n      \"Materno\": \"Perez\",\n      \"FechaNacimiento\": \"04-07-1992\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/v1/bfcl/mortgage-loan/injections",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "bfcl", "mortgage-loan", "injections"]
+            },
+            "description": "El caso de uso más importante. Payload mínimo con todos los campos obligatorios."
+          }
+        },
+        {
+          "name": "TC-17 Renegociación con NumeroOperacionOriginal",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-17: Status debe ser 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('TC-17: Body contiene StatusCode 200', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.StatusCode).to.eql(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"datos_credito\": {\n    \"NumeroSolicitud\": 192269,\n    \"AntiguedadVivienda\": 1,\n    \"EjecutivoComercial\": \"PSOTO\",\n    \"Producto\": 1,\n    \"Objetivo\": 1,\n    \"Destino\": 1,\n    \"FechaAprobacion\": \"2024-01-15\",\n    \"MontoAprobado\": 1688.09,\n    \"ValorPropiedad\": 2300.00,\n    \"ValorContado\": 261.91,\n    \"Plazo1\": 30,\n    \"MesesGracia\": 0,\n    \"Tasa1\": 3.99,\n    \"Spread1\": 0.0,\n    \"NumeroOperacionOriginal\": \"1234567890123456\",\n    \"MontoAbono\": 500.00,\n    \"NumeroRenegociacion\": 1\n  },\n  \"participantes\": [\n    {\n      \"Rut\": \"18.015.051-K\",\n      \"TipoParticipacion\": 1,\n      \"Nombre\": \"Pedro\",\n      \"Paterno\": \"Perez\",\n      \"Materno\": \"Perez\",\n      \"FechaNacimiento\": \"04-07-1992\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/v1/bfcl/mortgage-loan/injections",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "bfcl", "mortgage-loan", "injections"]
+            }
+          }
+        },
+        {
+          "name": "TC-18 NumeroOperacionOriginal > 16 chars",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-18: Status debe ser 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test('TC-18: Body menciona NumeroOperacionOriginal', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql('invalid_format');",
+                  "    pm.expect(json.message).to.include('NumeroOperacionOriginal');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"datos_credito\": {\n    \"NumeroSolicitud\": 192269,\n    \"AntiguedadVivienda\": 1,\n    \"EjecutivoComercial\": \"PSOTO\",\n    \"Producto\": 1,\n    \"Objetivo\": 1,\n    \"Destino\": 1,\n    \"FechaAprobacion\": \"2024-01-15\",\n    \"MontoAprobado\": 1688.09,\n    \"ValorPropiedad\": 2300.00,\n    \"ValorContado\": 261.91,\n    \"Plazo1\": 30,\n    \"MesesGracia\": 0,\n    \"Tasa1\": 3.99,\n    \"Spread1\": 0.0,\n    \"NumeroOperacionOriginal\": \"12345678901234567\"\n  },\n  \"participantes\": [\n    {\n      \"Rut\": \"18.015.051-K\",\n      \"TipoParticipacion\": 1,\n      \"Nombre\": \"Pedro\",\n      \"Paterno\": \"Perez\",\n      \"Materno\": \"Perez\",\n      \"FechaNacimiento\": \"04-07-1992\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/v1/bfcl/mortgage-loan/injections",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "bfcl", "mortgage-loan", "injections"]
+            },
+            "description": "NumeroOperacionOriginal con 17 caracteres. El máximo es 16."
+          }
+        },
+        {
+          "name": "TC-19 Múltiples participantes",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-19: Status debe ser 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('TC-19: Body contiene StatusCode 200', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.StatusCode).to.eql(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"datos_credito\": {\n    \"NumeroSolicitud\": 192269,\n    \"AntiguedadVivienda\": 1,\n    \"EjecutivoComercial\": \"PSOTO\",\n    \"Producto\": 1,\n    \"Objetivo\": 1,\n    \"Destino\": 1,\n    \"FechaAprobacion\": \"2024-01-15\",\n    \"MontoAprobado\": 1688.09,\n    \"ValorPropiedad\": 2300.00,\n    \"ValorContado\": 261.91,\n    \"Plazo1\": 30,\n    \"MesesGracia\": 0,\n    \"Tasa1\": 3.99,\n    \"Spread1\": 0.0\n  },\n  \"participantes\": [\n    {\n      \"Rut\": \"18.015.051-K\",\n      \"TipoParticipacion\": 1,\n      \"Nombre\": \"Pedro\",\n      \"Paterno\": \"Perez\",\n      \"Materno\": \"Perez\",\n      \"FechaNacimiento\": \"04-07-1992\",\n      \"Email\": \"pedro.perez@email.com\"\n    },\n    {\n      \"Rut\": \"12.345.678-9\",\n      \"TipoParticipacion\": 2,\n      \"Nombre\": \"Maria\",\n      \"Paterno\": \"Lopez\",\n      \"Materno\": \"Soto\",\n      \"FechaNacimiento\": \"15-03-1990\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/v1/bfcl/mortgage-loan/injections",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "bfcl", "mortgage-loan", "injections"]
+            },
+            "description": "Deudor (TipoParticipacion 1) + Codeudor (TipoParticipacion 2)"
+          }
+        },
+        {
+          "name": "TC-20 Con bloque propiedades",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-20: Status debe ser 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('TC-20: Body contiene StatusCode 200', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.StatusCode).to.eql(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"datos_credito\": {\n    \"NumeroSolicitud\": 192269,\n    \"AntiguedadVivienda\": 1,\n    \"EjecutivoComercial\": \"PSOTO\",\n    \"Producto\": 1,\n    \"Objetivo\": 1,\n    \"Destino\": 1,\n    \"FechaAprobacion\": \"2024-01-15\",\n    \"MontoAprobado\": 1688.09,\n    \"ValorPropiedad\": 2300.00,\n    \"ValorContado\": 261.91,\n    \"Plazo1\": 30,\n    \"MesesGracia\": 0,\n    \"Tasa1\": 3.99,\n    \"Spread1\": 0.0\n  },\n  \"participantes\": [\n    {\n      \"Rut\": \"18.015.051-K\",\n      \"TipoParticipacion\": 1,\n      \"Nombre\": \"Pedro\",\n      \"Paterno\": \"Perez\",\n      \"Materno\": \"Perez\",\n      \"FechaNacimiento\": \"04-07-1992\"\n    }\n  ],\n  \"propiedades\": [\n    {\n      \"TipoInmueble\": 1,\n      \"Antiguedad\": 10,\n      \"Direccion\": \"Av. Falabella 123\",\n      \"Numero\": 1234,\n      \"Depto\": \"201\",\n      \"Comuna\": 13101\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/v1/bfcl/mortgage-loan/injections",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "bfcl", "mortgage-loan", "injections"]
+            }
+          }
+        },
+        {
+          "name": "TC-21 Compatibilidad hacia atrás (sin campos opcionales)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-21: Status debe ser 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('TC-21: Body no tiene campos nulos visibles', function () {",
+                  "    var body = pm.response.text();",
+                  "    // Los campos null no deben ser enviados hacia FinnFlow",
+                  "    pm.expect(pm.response.json().StatusCode).to.eql(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"datos_credito\": {\n    \"NumeroSolicitud\": 192269,\n    \"AntiguedadVivienda\": 1,\n    \"EjecutivoComercial\": \"PSOTO\",\n    \"Producto\": 1,\n    \"Objetivo\": 1,\n    \"Destino\": 1,\n    \"FechaAprobacion\": \"2024-01-15\",\n    \"MontoAprobado\": 1688.09,\n    \"ValorPropiedad\": 2300.00,\n    \"ValorContado\": 261.91,\n    \"Plazo1\": 30,\n    \"MesesGracia\": 0,\n    \"Tasa1\": 3.99,\n    \"Spread1\": 0.0\n  },\n  \"participantes\": [\n    {\n      \"Rut\": \"18.015.051-K\",\n      \"TipoParticipacion\": 1,\n      \"Nombre\": \"Pedro\",\n      \"Paterno\": \"Perez\",\n      \"Materno\": \"Perez\",\n      \"FechaNacimiento\": \"04-07-1992\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/v1/bfcl/mortgage-loan/injections",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "bfcl", "mortgage-loan", "injections"]
+            },
+            "description": "Clientes que omiten Email, Depto, NumeroOperacionOriginal no deben ser afectados. Backward compatibility garantizada."
+          }
+        }
+      ]
+    }
+  ]
+}
