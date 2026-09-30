@@ -38,8 +38,9 @@ type tokenRequest struct {
 }
 
 type tokenResponse struct {
-	Access  string `json:"access"`
-	Refresh string `json:"refresh"`
+	AccessToken string `json:"access_token"`
+	ExpiresIn   int    `json:"expires_in"`
+	TokenType   string `json:"token_type"`
 }
 
 func (c *finnFlowClient) getToken() (string, error) {
@@ -77,13 +78,13 @@ func (c *finnFlowClient) getToken() (string, error) {
 		return "", err
 	}
 
-	if tResp.Access == "" {
+	if tResp.AccessToken == "" {
 		return "", fmt.Errorf("access token is empty")
 	}
 
-	slog.Debug(fmt.Sprintf("Access token obtained successfully. Token length: %d", len(tResp.Access)), "logger", "cl.bancofalabella.mortgage.injection.service.ThirdPartyApiService", "thread", "http-nio-8080-exec-1")
+	slog.Debug(fmt.Sprintf("Access token obtained successfully. Token length: %d", len(tResp.AccessToken)), "logger", "cl.bancofalabella.mortgage.injection.service.ThirdPartyApiService", "thread", "http-nio-8080-exec-1")
 
-	return tResp.Access, nil
+	return tResp.AccessToken, nil
 }
 
 func (c *finnFlowClient) Inject(req domain.InyeccionRequest) (domain.InyeccionResponse, error) {

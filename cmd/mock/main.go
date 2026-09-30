@@ -11,7 +11,7 @@ func main() {
 	http.HandleFunc("/api/token/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte(`{"access":"mock-token","refresh":"mock-refresh"}`))
+		_, _ = w.Write([]byte(`{"access_token":"mock-token","expires_in":3600,"token_type":"Bearer"}`))
 	})
 
 	// Endpoint falso para recibir la inyección
