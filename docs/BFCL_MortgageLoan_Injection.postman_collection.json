@@ -691,6 +691,100 @@
           }
         }
       ]
+    },
+    {
+      "name": "SRV01 - RENEGOCIACIÓN HIPOTECARIA",
+      "description": "Casos de uso específicos del SRV01. Validan los 7 nuevos campos obligatorios para renegociaciones hipotecarias definidos en Especificacion_SRV01.md",
+      "item": [
+        {
+          "name": "TC-22 SRV01 Happy Path - Renegociación completa (todos los campos)",
+          "event": [{"listen": "test","script": {"exec": ["pm.test('TC-22: Status debe ser 200', function () { pm.response.to.have.status(200); });","pm.test('TC-22: Body contiene StatusCode 200 y NumeroSolicitud', function () { var json = pm.response.json(); pm.expect(json.StatusCode).to.eql(200); pm.expect(json.NumeroSolicitud).to.eql(192269); });"],"type": "text/javascript"}}],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw","raw": "{\n  \"datos_credito\": {\n    \"NumeroSolicitud\": 192269,\n    \"AntiguedadVivienda\": 1,\n    \"EjecutivoComercial\": \"PSOTO\",\n    \"Producto\": 1,\n    \"Objetivo\": 1,\n    \"Destino\": 1,\n    \"FechaAprobacion\": \"2024-01-15\",\n    \"MontoAprobado\": 1688.09,\n    \"ValorPropiedad\": 2300.00,\n    \"ValorContado\": 261.91,\n    \"Plazo1\": 30,\n    \"MesesGracia\": 0,\n    \"Tasa1\": 3.99,\n    \"Spread1\": 0.0,\n    \"NumeroOperacionOriginal\": \"1234567890123456\",\n    \"MontoAbono\": 19.2000,\n    \"IncluirGastosOperacionales\": 1,\n    \"TipoGarantia\": 2,\n    \"NumeroRenegociacion\": 1,\n    \"SubsidioOriginal\": 1,\n    \"ReduccionInteresesYGC\": 10\n  },\n  \"participantes\": [\n    {\n      \"Rut\": \"18.015.051-K\",\n      \"TipoParticipacion\": 1,\n      \"Nombre\": \"Pedro\",\n      \"Paterno\": \"Perez\",\n      \"Materno\": \"Perez\",\n      \"FechaNacimiento\": \"04-07-1992\"\n    }\n  ]\n}"},
+            "url": {"raw": "{{base_url}}/v1/bfcl/mortgage-loan/injections","host": ["{{base_url}}"],"path": ["v1", "bfcl", "mortgage-loan", "injections"]},
+            "description": "SRV01 completo con los 7 nuevos campos de renegociación. NumeroOperacionOriginal exactamente 16 chars (máximo permitido RN01)."
+          }
+        },
+        {
+          "name": "TC-23 SRV01 NumeroOperacionOriginal exactamente 16 chars (límite RN01 válido)",
+          "event": [{"listen": "test","script": {"exec": ["pm.test('TC-23: Status debe ser 200 - borde máximo RN01 válido', function () { pm.response.to.have.status(200); });","pm.test('TC-23: Body contiene StatusCode 200', function () { var json = pm.response.json(); pm.expect(json.StatusCode).to.eql(200); });"],"type": "text/javascript"}}],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw","raw": "{\n  \"datos_credito\": {\n    \"NumeroSolicitud\": 192269,\n    \"AntiguedadVivienda\": 1,\n    \"EjecutivoComercial\": \"PSOTO\",\n    \"Producto\": 1,\n    \"Objetivo\": 1,\n    \"Destino\": 1,\n    \"FechaAprobacion\": \"2024-01-15\",\n    \"MontoAprobado\": 1688.09,\n    \"ValorPropiedad\": 2300.00,\n    \"ValorContado\": 261.91,\n    \"Plazo1\": 30,\n    \"MesesGracia\": 0,\n    \"Tasa1\": 3.99,\n    \"Spread1\": 0.0,\n    \"NumeroOperacionOriginal\": \"1234567890123456\",\n    \"IncluirGastosOperacionales\": 1,\n    \"TipoGarantia\": 1,\n    \"NumeroRenegociacion\": 1,\n    \"SubsidioOriginal\": 0,\n    \"ReduccionInteresesYGC\": 0\n  },\n  \"participantes\": [\n    {\n      \"Rut\": \"18.015.051-K\",\n      \"TipoParticipacion\": 1,\n      \"Nombre\": \"Pedro\",\n      \"Paterno\": \"Perez\",\n      \"Materno\": \"Perez\",\n      \"FechaNacimiento\": \"04-07-1992\"\n    }\n  ]\n}"},
+            "url": {"raw": "{{base_url}}/v1/bfcl/mortgage-loan/injections","host": ["{{base_url}}"],"path": ["v1", "bfcl", "mortgage-loan", "injections"]},
+            "description": "RN01: NumeroOperacionOriginal VARCHAR(16). Prueba el valor exactamente en el límite máximo (16 chars = válido)."
+          }
+        },
+        {
+          "name": "TC-24 SRV01 NumeroOperacionOriginal 17 chars (viola RN01)",
+          "event": [{"listen": "test","script": {"exec": ["pm.test('TC-24: Status debe ser 400 - viola RN01 VARCHAR(16)', function () { pm.response.to.have.status(400); });","pm.test('TC-24: Body menciona NumeroOperacionOriginal', function () { var json = pm.response.json(); pm.expect(json.code).to.eql('invalid_format'); pm.expect(json.message).to.include('NumeroOperacionOriginal'); });"],"type": "text/javascript"}}],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw","raw": "{\n  \"datos_credito\": {\n    \"NumeroSolicitud\": 192269,\n    \"AntiguedadVivienda\": 1,\n    \"EjecutivoComercial\": \"PSOTO\",\n    \"Producto\": 1,\n    \"Objetivo\": 1,\n    \"Destino\": 1,\n    \"FechaAprobacion\": \"2024-01-15\",\n    \"MontoAprobado\": 1688.09,\n    \"ValorPropiedad\": 2300.00,\n    \"ValorContado\": 261.91,\n    \"Plazo1\": 30,\n    \"MesesGracia\": 0,\n    \"Tasa1\": 3.99,\n    \"Spread1\": 0.0,\n    \"NumeroOperacionOriginal\": \"12345678901234567\",\n    \"IncluirGastosOperacionales\": 1,\n    \"TipoGarantia\": 1,\n    \"NumeroRenegociacion\": 1,\n    \"SubsidioOriginal\": 0,\n    \"ReduccionInteresesYGC\": 0\n  },\n  \"participantes\": [\n    {\n      \"Rut\": \"18.015.051-K\",\n      \"TipoParticipacion\": 1,\n      \"Nombre\": \"Pedro\",\n      \"Paterno\": \"Perez\",\n      \"Materno\": \"Perez\",\n      \"FechaNacimiento\": \"04-07-1992\"\n    }\n  ]\n}"},
+            "url": {"raw": "{{base_url}}/v1/bfcl/mortgage-loan/injections","host": ["{{base_url}}"],"path": ["v1", "bfcl", "mortgage-loan", "injections"]},
+            "description": "RN01: NumeroOperacionOriginal con 17 chars. Debe rechazarse con 400 por exceder VARCHAR(16)."
+          }
+        },
+        {
+          "name": "TC-25 SRV01 IncluirGastosOperacionales = 1 (RN05: capitalizar en crédito)",
+          "event": [{"listen": "test","script": {"exec": ["pm.test('TC-25: Status debe ser 200 - RN05 gastos capitalizados', function () { pm.response.to.have.status(200); });","pm.test('TC-25: Body confirma inyección exitosa', function () { var json = pm.response.json(); pm.expect(json.StatusCode).to.eql(200); });"],"type": "text/javascript"}}],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw","raw": "{\n  \"datos_credito\": {\n    \"NumeroSolicitud\": 192273,\n    \"AntiguedadVivienda\": 1,\n    \"EjecutivoComercial\": \"PSOTO\",\n    \"Producto\": 1,\n    \"Objetivo\": 1,\n    \"Destino\": 1,\n    \"FechaAprobacion\": \"2024-01-15\",\n    \"MontoAprobado\": 1688.09,\n    \"ValorPropiedad\": 2300.00,\n    \"ValorContado\": 261.91,\n    \"Plazo1\": 30,\n    \"MesesGracia\": 0,\n    \"Tasa1\": 3.99,\n    \"Spread1\": 0.0,\n    \"NumeroOperacionOriginal\": \"1234567890123456\",\n    \"MontoAbono\": 500.00,\n    \"IncluirGastosOperacionales\": 1,\n    \"TipoGarantia\": 2,\n    \"NumeroRenegociacion\": 1,\n    \"SubsidioOriginal\": 0,\n    \"ReduccionInteresesYGC\": 0\n  },\n  \"participantes\": [\n    {\n      \"Rut\": \"18.015.051-K\",\n      \"TipoParticipacion\": 1,\n      \"Nombre\": \"Pedro\",\n      \"Paterno\": \"Perez\",\n      \"Materno\": \"Perez\",\n      \"FechaNacimiento\": \"04-07-1992\"\n    }\n  ]\n}"},
+            "url": {"raw": "{{base_url}}/v1/bfcl/mortgage-loan/injections","host": ["{{base_url}}"],"path": ["v1", "bfcl", "mortgage-loan", "injections"]},
+            "description": "RN05: IncluirGastosOperacionales=1. FinnFlow capitaliza los gastos en el crédito renegociado. No se cobra aparte al cliente."
+          }
+        },
+        {
+          "name": "TC-26 SRV01 IncluirGastosOperacionales = 0 (RN05: sin capitalizar)",
+          "event": [{"listen": "test","script": {"exec": ["pm.test('TC-26: Status debe ser 200 - RN05 sin capitalizar gastos', function () { pm.response.to.have.status(200); });","pm.test('TC-26: Body confirma inyección exitosa', function () { var json = pm.response.json(); pm.expect(json.StatusCode).to.eql(200); });"],"type": "text/javascript"}}],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw","raw": "{\n  \"datos_credito\": {\n    \"NumeroSolicitud\": 192274,\n    \"AntiguedadVivienda\": 1,\n    \"EjecutivoComercial\": \"PSOTO\",\n    \"Producto\": 1,\n    \"Objetivo\": 1,\n    \"Destino\": 1,\n    \"FechaAprobacion\": \"2024-01-15\",\n    \"MontoAprobado\": 1688.09,\n    \"ValorPropiedad\": 2300.00,\n    \"ValorContado\": 261.91,\n    \"Plazo1\": 30,\n    \"MesesGracia\": 0,\n    \"Tasa1\": 3.99,\n    \"Spread1\": 0.0,\n    \"NumeroOperacionOriginal\": \"1234567890123456\",\n    \"IncluirGastosOperacionales\": 0,\n    \"TipoGarantia\": 1,\n    \"NumeroRenegociacion\": 1,\n    \"SubsidioOriginal\": 0,\n    \"ReduccionInteresesYGC\": 0\n  },\n  \"participantes\": [\n    {\n      \"Rut\": \"18.015.051-K\",\n      \"TipoParticipacion\": 1,\n      \"Nombre\": \"Pedro\",\n      \"Paterno\": \"Perez\",\n      \"Materno\": \"Perez\",\n      \"FechaNacimiento\": \"04-07-1992\"\n    }\n  ]\n}"},
+            "url": {"raw": "{{base_url}}/v1/bfcl/mortgage-loan/injections","host": ["{{base_url}}"],"path": ["v1", "bfcl", "mortgage-loan", "injections"]},
+            "description": "RN05: IncluirGastosOperacionales=0. Los gastos operacionales NO se incorporan al financiamiento del nuevo crédito."
+          }
+        },
+        {
+          "name": "TC-27 SRV01 TipoGarantia General (RN02: valor 1)",
+          "event": [{"listen": "test","script": {"exec": ["pm.test('TC-27: Status debe ser 200 - TipoGarantia General', function () { pm.response.to.have.status(200); });","pm.test('TC-27: Body confirma inyección exitosa', function () { var json = pm.response.json(); pm.expect(json.StatusCode).to.eql(200); });"],"type": "text/javascript"}}],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw","raw": "{\n  \"datos_credito\": {\n    \"NumeroSolicitud\": 192275,\n    \"AntiguedadVivienda\": 1,\n    \"EjecutivoComercial\": \"PSOTO\",\n    \"Producto\": 1,\n    \"Objetivo\": 1,\n    \"Destino\": 1,\n    \"FechaAprobacion\": \"2024-01-15\",\n    \"MontoAprobado\": 1688.09,\n    \"ValorPropiedad\": 2300.00,\n    \"ValorContado\": 261.91,\n    \"Plazo1\": 30,\n    \"MesesGracia\": 0,\n    \"Tasa1\": 3.99,\n    \"Spread1\": 0.0,\n    \"NumeroOperacionOriginal\": \"1234567890123456\",\n    \"IncluirGastosOperacionales\": 1,\n    \"TipoGarantia\": 1,\n    \"NumeroRenegociacion\": 1,\n    \"SubsidioOriginal\": 0,\n    \"ReduccionInteresesYGC\": 0\n  },\n  \"participantes\": [\n    {\n      \"Rut\": \"18.015.051-K\",\n      \"TipoParticipacion\": 1,\n      \"Nombre\": \"Pedro\",\n      \"Paterno\": \"Perez\",\n      \"Materno\": \"Perez\",\n      \"FechaNacimiento\": \"04-07-1992\"\n    }\n  ]\n}"},
+            "url": {"raw": "{{base_url}}/v1/bfcl/mortgage-loan/injections","host": ["{{base_url}}"],"path": ["v1", "bfcl", "mortgage-loan", "injections"]},
+            "description": "RN02: TipoGarantia=1 (General). Valor proveniente del catálogo compartido Salesforce/FinnFlow (SRV06)."
+          }
+        },
+        {
+          "name": "TC-28 SRV01 TipoGarantia Específica (RN02: valor 2)",
+          "event": [{"listen": "test","script": {"exec": ["pm.test('TC-28: Status debe ser 200 - TipoGarantia Específica', function () { pm.response.to.have.status(200); });","pm.test('TC-28: Body confirma inyección exitosa', function () { var json = pm.response.json(); pm.expect(json.StatusCode).to.eql(200); });"],"type": "text/javascript"}}],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw","raw": "{\n  \"datos_credito\": {\n    \"NumeroSolicitud\": 192276,\n    \"AntiguedadVivienda\": 1,\n    \"EjecutivoComercial\": \"PSOTO\",\n    \"Producto\": 1,\n    \"Objetivo\": 1,\n    \"Destino\": 1,\n    \"FechaAprobacion\": \"2024-01-15\",\n    \"MontoAprobado\": 1688.09,\n    \"ValorPropiedad\": 2300.00,\n    \"ValorContado\": 261.91,\n    \"Plazo1\": 30,\n    \"MesesGracia\": 0,\n    \"Tasa1\": 3.99,\n    \"Spread1\": 0.0,\n    \"NumeroOperacionOriginal\": \"1234567890123456\",\n    \"IncluirGastosOperacionales\": 1,\n    \"TipoGarantia\": 2,\n    \"NumeroRenegociacion\": 1,\n    \"SubsidioOriginal\": 0,\n    \"ReduccionInteresesYGC\": 0\n  },\n  \"participantes\": [\n    {\n      \"Rut\": \"18.015.051-K\",\n      \"TipoParticipacion\": 1,\n      \"Nombre\": \"Pedro\",\n      \"Paterno\": \"Perez\",\n      \"Materno\": \"Perez\",\n      \"FechaNacimiento\": \"04-07-1992\"\n    }\n  ]\n}"},
+            "url": {"raw": "{{base_url}}/v1/bfcl/mortgage-loan/injections","host": ["{{base_url}}"],"path": ["v1", "bfcl", "mortgage-loan", "injections"]},
+            "description": "RN02: TipoGarantia=2 (Específica). Valor proveniente del catálogo compartido Salesforce/FinnFlow (SRV06)."
+          }
+        },
+        {
+          "name": "TC-29 SRV01 Segunda Renegociación (NumeroRenegociacion = 2)",
+          "event": [{"listen": "test","script": {"exec": ["pm.test('TC-29: Status debe ser 200 - segunda renegociación', function () { pm.response.to.have.status(200); });","pm.test('TC-29: Body confirma inyección exitosa', function () { var json = pm.response.json(); pm.expect(json.StatusCode).to.eql(200); });"],"type": "text/javascript"}}],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw","raw": "{\n  \"datos_credito\": {\n    \"NumeroSolicitud\": 192277,\n    \"AntiguedadVivienda\": 1,\n    \"EjecutivoComercial\": \"PSOTO\",\n    \"Producto\": 1,\n    \"Objetivo\": 1,\n    \"Destino\": 1,\n    \"FechaAprobacion\": \"2024-01-15\",\n    \"MontoAprobado\": 1688.09,\n    \"ValorPropiedad\": 2300.00,\n    \"ValorContado\": 261.91,\n    \"Plazo1\": 30,\n    \"MesesGracia\": 0,\n    \"Tasa1\": 3.99,\n    \"Spread1\": 0.0,\n    \"NumeroOperacionOriginal\": \"1234567890123456\",\n    \"MontoAbono\": 19.2000,\n    \"IncluirGastosOperacionales\": 0,\n    \"TipoGarantia\": 1,\n    \"NumeroRenegociacion\": 2,\n    \"SubsidioOriginal\": 1,\n    \"ReduccionInteresesYGC\": 10\n  },\n  \"participantes\": [\n    {\n      \"Rut\": \"18.015.051-K\",\n      \"TipoParticipacion\": 1,\n      \"Nombre\": \"Pedro\",\n      \"Paterno\": \"Perez\",\n      \"Materno\": \"Perez\",\n      \"FechaNacimiento\": \"04-07-1992\"\n    }\n  ]\n}"},
+            "url": {"raw": "{{base_url}}/v1/bfcl/mortgage-loan/injections","host": ["{{base_url}}"],"path": ["v1", "bfcl", "mortgage-loan", "injections"]},
+            "description": "NumeroRenegociacion=2 indica que el cliente ya tuvo una renegociación previa. Valida que el campo contabiliza historial correctamente."
+          }
+        }
+      ]
     }
   ]
 }
